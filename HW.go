@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -15,12 +14,15 @@ C:/Users/1/GolandProjects/awesomeProject/ДЗ1/file.txt.txt
 func reading() (map[string]int, bool) {
 	var input_file string
 	fmt.Print("Enter your input file: ")
-	fmt.Scan(&input_file)
+	_, scanerr := fmt.Scan(&input_file)
+	if scanerr != nil {
+		fmt.Println("Scan error: ", scanerr)
+		return nil, false
+	}
 	file, err := os.Open(input_file)
 	if err != nil {
 		fmt.Println("Can not find the file", err)
-		dict := make(map[string]int)
-		return dict, false
+		return nil, false
 	} else {
 		defer file.Close()
 		scaner := bufio.NewScanner(file)
@@ -58,8 +60,11 @@ func up_sort(b []string) []string {
 func output(b []string) {
 	var output_file string
 	fmt.Print("Enter your output file: ")
-	fmt.Scan(&output_file)
-
+	_, scanerr := fmt.Scan(&output_file)
+	if scanerr != nil {
+		fmt.Println("Scan error: ", scanerr)
+		return
+	}
 	file1, err := os.Create(output_file)
 	if err != nil {
 		fmt.Println("Can not create a file", err)
@@ -67,7 +72,8 @@ func output(b []string) {
 	}
 	defer file1.Close()
 	for _, el := range b {
-		file1.WriteString(el + " - " + strconv.Itoa(len(el)) + " байт" + "\n")
+		fmt.Fprintf(file1, "%s - %d байт", el, len(el))
+		fmt.Fprint(file1, "\n")
 	}
 }
 func main() {
