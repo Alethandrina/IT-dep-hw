@@ -13,25 +13,30 @@ import (
 C:/Users/1/GolandProjects/awesomeProject/ДЗ1/file.txt.txt
 */
 
-func readDict(inputFile string) map[string]int {
+func readFile(inputFile string) []string {
 	file, _ := os.Open(inputFile)
+	a := make([]string, 0)
 	defer file.Close()
 	scaner := bufio.NewScanner(file)
-	dict := make(map[string]int)
 	for scaner.Scan() {
 		line := scaner.Text()
-		kol, ok := dict[line]
-		if ok {
-			dict[line] = kol + 1
-		} else {
-			dict[line] = 1
-		}
+		a = append(a, line)
 	}
-	return dict
+	fmt.Println(a)
+	return a
 }
 
-func findUniq(dict map[string]int) []string {
+func findUniq(b []string) []string {
 	a := make([]string, 0)
+	dict := make(map[string]int)
+	for i := 0; i < len(b); i++ {
+		kol, ok := dict[b[i]]
+		if ok {
+			dict[b[i]] = kol + 1
+		} else {
+			dict[b[i]] = 1
+		}
+	}
 	for key, value := range dict {
 		if value == 1 {
 			a = append(a, key)
@@ -84,7 +89,7 @@ func main() {
 		return
 	}
 	file1.Close()
-	a := readDict(inputFile)
+	a := readFile(inputFile)
 	b := findUniq(a)
 	up(b)
 	sort.Strings(b)
