@@ -13,36 +13,7 @@ import (
 C:/Users/1/GolandProjects/awesomeProject/ДЗ1/file.txt.txt
 */
 
-func input(s string) (string, bool) {
-	var name string
-	fmt.Println(s)
-	_, scanerr := fmt.Scan(&name)
-	if scanerr != nil {
-		fmt.Println("Scan error: ", scanerr)
-		return "", false
-	}
-	return name, true
-}
-func openFile(name string) bool {
-	file, err := os.Open(name)
-	if err != nil {
-		fmt.Println("There's a problem with opening file: ", err)
-		return false
-	}
-	file.Close()
-	return true
-}
-
-func createFile(name string) bool {
-	file, err := os.Create(name)
-	if err != nil {
-		fmt.Println("Can not create a file", err)
-		return false
-	}
-	file.Close()
-	return true
-}
-func getDict(inputFile string) map[string]int {
+func readDict(inputFile string) map[string]int {
 	file, _ := os.Open(inputFile)
 	defer file.Close()
 	scaner := bufio.NewScanner(file)
@@ -69,49 +40,54 @@ func findUniq(dict map[string]int) []string {
 	return a
 }
 
-func up(b []string) []string {
+func up(b []string) {
 	for in, el := range b {
 		b[in] = strings.ToUpper(el)
 	}
-	return b
 }
 
-func modify(b []string) []string {
-	c := b[:]
-	for i := 0; i < len(c); i++ {
-		c[i] = c[i] + " - " + strconv.Itoa(len(b[i])) + " байт"
+func addInfo(b []string) {
+	for i := 0; i < len(b); i++ {
+		b[i] = b[i] + " - " + strconv.Itoa(len(b[i])) + " байт"
 	}
-	return c
 }
 func output(output_file string, c []string) {
 	file1, _ := os.Create(output_file)
 	defer file1.Close()
 	for _, el := range c {
-		fmt.Fprintf(file1, el)
-		fmt.Fprintf(file1, "\n")
+		fmt.Fprintln(file1, el)
 	}
 }
 func main() {
-	inputFile, f1 := input("Enter your input file: ")
-	if !f1 {
+	var inputFile, outputFile string
+	fmt.Println("Enter your input file:")
+	_, f1 := fmt.Scan(&inputFile)
+	if f1 != nil {
+		fmt.Println("Scan error: ", f1)
 		return
 	}
-	f1 = openFile(inputFile)
-	if !f1 {
+	file, err := os.Open(inputFile)
+	if err != nil {
+		fmt.Println("There's a problem with opening file: ", err)
 		return
 	}
-	outputFile, f2 := input("Enter your output file: ")
-	if !f2 {
+	file.Close()
+	fmt.Println("Enter your  output file:")
+	_, f2 := fmt.Scan(&outputFile)
+	if f2 != nil {
+		fmt.Println("Scan error: ", f2)
 		return
 	}
-	f2 = createFile(outputFile)
-	if !f2 {
+	file1, err1 := os.Create(outputFile)
+	if err1 != nil {
+		fmt.Println("There's a problem with creating file: ", err1)
 		return
 	}
-	a := getDict(inputFile)
+	file1.Close()
+	a := readDict(inputFile)
 	b := findUniq(a)
-	b = up(b)
+	up(b)
 	sort.Strings(b)
-	c := modify(b)
-	output(outputFile, c)
+	addInfo(b)
+	output(outputFile, b)
 }
