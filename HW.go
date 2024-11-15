@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -13,8 +12,11 @@ import (
 C:/Users/1/GolandProjects/awesomeProject/ДЗ1/file.txt.txt
 */
 
-func readFile(inputFile string) []string {
-	file, _ := os.Open(inputFile)
+func readFile(inputFile string) ([]string, error) {
+	file, err := os.Open(inputFile)
+	if err != nil {
+		return nil, err
+	}
 	a := make([]string, 0)
 	defer file.Close()
 	scaner := bufio.NewScanner(file)
@@ -22,24 +24,30 @@ func readFile(inputFile string) []string {
 		line := scaner.Text()
 		a = append(a, line)
 	}
-	fmt.Println(a)
-	return a
+	return a, nil
 }
 
 func findUniq(b []string) []string {
-	a := make([]string, 0)
+	cnt := len(b)
 	dict := make(map[string]int)
-	for i := 0; i < len(b); i++ {
-		kol, ok := dict[b[i]]
-		if ok {
-			dict[b[i]] = kol + 1
-		} else {
-			dict[b[i]] = 1
+	for _, el := range b {
+		_, ok := dict[el]
+		if !ok {
+			dict[el] = 0
+		}
+		dict[el]++
+		if dict[el] == 2 {
+			cnt -= 2
+		} else if dict[el] > 2 {
+			cnt -= 1
 		}
 	}
+	a := make([]string, cnt)
+	i := 0
 	for key, value := range dict {
 		if value == 1 {
-			a = append(a, key)
+			a[i] = key
+			i++
 		}
 	}
 	return a
@@ -51,17 +59,21 @@ func up(b []string) {
 	}
 }
 
-func addInfo(b []string) {
-	for i := 0; i < len(b); i++ {
-		b[i] = b[i] + " - " + strconv.Itoa(len(b[i])) + " байт"
+func addInfoAboutBytes(b []string) {
+	for i, el := range b {
+		b[i] = fmt.Sprintf("%s - %d байт", el, len(el))
 	}
 }
-func output(output_file string, c []string) {
-	file1, _ := os.Create(output_file)
+func output(output_file string, c []string) error {
+	file1, err := os.Create(output_file)
+	if err != nil {
+		return err
+	}
 	defer file1.Close()
 	for _, el := range c {
 		fmt.Fprintln(file1, el)
 	}
+	return nil
 }
 func main() {
 	var inputFile, outputFile string
@@ -71,28 +83,24 @@ func main() {
 		fmt.Println("Scan error: ", f1)
 		return
 	}
-	file, err := os.Open(inputFile)
-	if err != nil {
-		fmt.Println("There's a problem with opening file: ", err)
-		return
-	}
-	file.Close()
 	fmt.Println("Enter your  output file:")
 	_, f2 := fmt.Scan(&outputFile)
 	if f2 != nil {
 		fmt.Println("Scan error: ", f2)
 		return
 	}
-	file1, err1 := os.Create(outputFile)
+	a, err1 := readFile(inputFile)
 	if err1 != nil {
-		fmt.Println("There's a problem with creating file: ", err1)
+		fmt.Println("Read error: ", err1)
 		return
 	}
-	file1.Close()
-	a := readFile(inputFile)
 	b := findUniq(a)
 	up(b)
 	sort.Strings(b)
-	addInfo(b)
-	output(outputFile, b)
+	addInfoAboutBytes(b)
+	err2 := output(outputFile, b)
+	if err2 != nil {
+		fmt.Println("Error while creating a file: ", err2)
+		return
+	}
 }
